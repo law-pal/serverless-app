@@ -7,6 +7,7 @@ import { createTodo } from '../../bussinessLogic/todos'
 
 const logger = createLogger('createTodo')
 
+
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
   logger.info('Processing event: ', event)
