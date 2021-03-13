@@ -47,7 +47,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
-          - dynamodb:Scan
+          - dynamodb:GetItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
       - Effect: Allow
         Action:
@@ -68,9 +68,7 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-    request:
-      schema:
-        application/json: ${file(src/schemas/todo-item-create.json)}
+   
 
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
@@ -126,9 +124,6 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
           gatewayresponse.header.Access-Control-Allow-Methods: "'*'"
-          # gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          # gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type, X-Amz-Date,Authorization'"
-          # gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
 
         ResponseType: DEFAULT_4XX
         RestApiId:

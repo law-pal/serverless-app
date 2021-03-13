@@ -1,27 +1,24 @@
-import 'source-map-support/register'
-import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
-import { createLogger } from '../../utils/logger'
-import { deleteTodo } from '../../bussinessLogic/todos'
-
-
-const logger = createLogger('auth')
+import 'source-map-support/register';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda';
+import { deleteTodo } from '../../bussinessLogic/todos';
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const todoId = event.pathParameters.todoId
-
-  logger.info('Processing event: ', event)
-
-  const result = await deleteTodo(todoId)
-  logger.info('Processing result: ', {result: result})
+  if (!(await deleteTodo(event))) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({
+        error: 'Item does not exist'
+      })
+    };
+  }
 
   return {
-    statusCode: 201,
+    statusCode: 202,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true
     },
-    body: JSON.stringify({
-      result
-    })
-  }
+    body: JSON.stringify({})
+  };
 }
+

@@ -1,23 +1,95 @@
-import { TodoItem } from '../models/TodoItem'
-import { TodosAccess } from '../dataLayer/todosAccess'
+import 'source-map-support/register';
+import * as uuid from 'uuid';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import TodosAccess from '../dataLayer/todosAccess';
+import TodoStorageLayer from '../dataLayer/todosStore';
+import { getUserId } from '../lambda/utils';
+import { CreateTodoRequest } from '../requests/CreateTodoRequest';
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest';
-import { UpdateItemOutput, DeleteItemOutput } from 'aws-sdk/clients/dynamodb';
+import { TodoItem } from '../models/TodoItem';
 
-const todoItemAccess = new TodosAccess()
+const todoAccessLayer = new TodosAccess();
+const todoStorageLayer = new TodoStorageLayer();
 
-export async function getAllTodos(subject): Promise<TodoItem[]>{
-    return todoItemAccess.getAllTodos(subject); 
+export async function createTodo(event: APIGatewayProxyEvent,
+                                 createTodoRequest: CreateTodoRequest): Promise<TodoItem> {
+  const todoId = uuid.v4();
+  const userId = getUserId(event);
+  const createdAt = new Date(Date.now()).toISOString();
+
+  const todoItem = {
+    userId,
+    todoId,
+    createdAt,
+    done: false,
+    attachmentUrl: `https://${todoStorageLayer.getBucketName()}.s3.amazonaws.com/${todoId}`,
+    ...createTodoRequest
+  };
+
+  await todoAccessLayer.addTodo(todoItem);
+
+  return todoItem;
 }
 
-export async function updateTodo(todoId, updatedTodo:UpdateTodoRequest): Promise<UpdateItemOutput[]>{
-    return todoItemAccess.updateTodo(todoId, updatedTodo); 
+export async function getTodo(event: APIGatewayProxyEvent) {
+  const todoId = event.pathParameters.todoId;
+  const userId = getUserId(event);
+
+  return await todoAccessLayer.getTodo(todoId, userId);
 }
 
-export async function createTodo(newItem): Promise<void>{
-    return todoItemAccess.createTodo(newItem); 
+export async function getTodos(event: APIGatewayProxyEvent) {
+  const userId = getUserId(event);
+
+  return await todoAccessLayer.getAllTodos(userId);
 }
 
-export async function deleteTodo(todoId): Promise<DeleteItemOutput>{
-    return todoItemAccess.deleteTodo(todoId); 
+export async function updateTodo(event: APIGatewayProxyEvent,
+                                 updateTodoRequest: UpdateTodoRequest) {
+  const todoId = event.pathParameters.todoId;
+  const userId = getUserId(event);
+
+  if (!(await todoAccessLayer.getTodo(todoId, userId))) {
+    return false;
+  }
+
+  await todoAccessLayer.updateTodo(todoId, userId, updateTodoRequest);
+
+  return true;
 }
+
+export async function deleteTodo(event: APIGatewayProxyEvent) {
+  const todoId = event.pathParameters.todoId;
+  const userId = getUserId(event);
+
+  if (!(await todoAccessLayer.getTodo(todoId, userId))) {
+    return false;
+  }
+
+  await todoAccessLayer.deleteTodo(todoId, userId);
+
+  return true;
+}
+
+export async function generateUploadUrl(event: APIGatewayProxyEvent) {
+  const bucket = todoStorageLayer.getBucketName();
+  const urlExpiration = process.env.SIGNED_URL_EXPIRATION;
+  const todoId = event.pathParameters.todoId;
+
+  const createSignedUrlRequest = {
+    Bucket: bucket,
+    Key: todoId,
+    Expires: parseInt(urlExpiration)
+  }
+
+  return todoStorageLayer.getPresignedUploadURL(createSignedUrlRequest);
+}
+
+
+
+
+
+
+
+
 
