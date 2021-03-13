@@ -6,9 +6,9 @@ import { createLogger } from '../../utils/logger'
 const logger = createLogger('generateUploadUrl')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  logger.info(`Processing event ${JSON.stringify(event)}`)
   const url = await generateUploadUrl(event);
-
+  logger.info(`Processing event ${JSON.stringify(event)}`)
+  
   return {
     statusCode: 202,
     headers: {

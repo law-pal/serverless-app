@@ -6,6 +6,7 @@ import { createLogger } from '../../utils/logger'
 const logger = createLogger('deleteTodo')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  
   logger.info(`Processing event ${JSON.stringify(event)}`)
   if (!(await deleteTodo(event))) {
     return {
@@ -15,7 +16,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       })
     };
   }
-
+  
   return {
     statusCode: 202,
     headers: {
