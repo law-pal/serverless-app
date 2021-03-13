@@ -1,9 +1,9 @@
 import 'source-map-support/register';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda';
-import { generateUploadUrl } from '../../bussinessLogic/todos';
+import { generateUploadUrl } from '../../distribution/todosDistributions';
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const signedUrl = await generateUploadUrl(event);
+  const url = await generateUploadUrl(event);
 
   return {
     statusCode: 202,
@@ -12,7 +12,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      uploadUrl: signedUrl
+      uploadUrl: url
     })
   };
 }

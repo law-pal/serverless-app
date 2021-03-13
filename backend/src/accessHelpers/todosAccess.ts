@@ -7,13 +7,13 @@ const XAWS = AWSXRay.captureAWS(AWS)
 export default class TodosAccess {
   
   constructor(
-    private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
     private readonly todosTable = process.env.TODOS_TABLE,
-    private readonly indexName = process.env.INDEX_NAME
+    private readonly indexName = process.env.INDEX_NAME,
+    private readonly documentClient: DocumentClient = new XAWS.DynamoDB.DocumentClient()
   ) { }
   
   async getAllTodos(userId) {
-    const result = await this.docClient.query({
+    const result = await this.documentClient.query({
       TableName: this.todosTable,
       IndexName: this.indexName,
       KeyConditionExpression: 'userId = :userId',
@@ -27,7 +27,7 @@ export default class TodosAccess {
 
 
   async updateTodo(todoId, userId, updatedTodo) {
-    await this.docClient.update({
+    await this.documentClient.update({
       TableName: this.todosTable,
       Key: {
         todoId,
@@ -48,7 +48,7 @@ export default class TodosAccess {
   }
 
   async deleteTodo(todoId, userId) {
-    await this.docClient.delete({
+    await this.documentClient.delete({
       TableName: this.todosTable,
       Key: {
         todoId,
@@ -58,7 +58,7 @@ export default class TodosAccess {
   }
 
   async getTodo(todoId, userId) {
-    const result = await this.docClient.get({
+    const result = await this.documentClient.get({
       TableName: this.todosTable,
       Key: {
         todoId,
@@ -70,7 +70,7 @@ export default class TodosAccess {
   }
 
   async addTodo(todoItem) {
-    await this.docClient.put({
+    await this.documentClient.put({
       TableName: this.todosTable,
       Item: todoItem
     }).promise();

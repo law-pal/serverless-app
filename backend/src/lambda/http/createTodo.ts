@@ -1,22 +1,21 @@
 import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
-import { createTodo } from '../../bussinessLogic/todos'
-
+import { createTodo } from '../../distribution/todosDistributions'
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const newTodo: CreateTodoRequest = JSON.parse(event.body);
+  const newTodos: CreateTodoRequest = JSON.parse(event.body);
 
-  if (!newTodo.name) {
+  if (!newTodos.name) {
     return {
       statusCode: 400,
       body: JSON.stringify({
-        error: 'name is empty'
+        error: 'name not found'
       })
     };
   }
 
-  const todoItem = await createTodo(event, newTodo);
+  const items = await createTodo(event, newTodos);
 
   return {
     statusCode: 201,
@@ -25,7 +24,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      item: todoItem
+      item: items
     })
   };
 }
