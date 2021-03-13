@@ -1,8 +1,12 @@
 import 'source-map-support/register';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda';
 import { deleteTodo } from '../../distribution/todosDistributions';
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('deleteTodo')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  logger.info(`Processing event ${JSON.stringify(event)}`)
   if (!(await deleteTodo(event))) {
     return {
       statusCode: 404,

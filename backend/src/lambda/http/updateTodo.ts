@@ -2,11 +2,13 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
 import { updateTodo } from '../../distribution/todosDistributions'
+import { createLogger } from '../../utils/logger'
 
+const logger = createLogger('updateTodos')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  logger.info(`Processing event ${JSON.stringify(event)}`)
   const todoUpdated: UpdateTodoRequest = JSON.parse(event.body);
-
   const updatedTodo = await updateTodo(event, todoUpdated);
   if (!updatedTodo) {
     return {

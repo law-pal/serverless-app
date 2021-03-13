@@ -12,6 +12,7 @@ export default class TodosAccess {
     private readonly documentClient: DocumentClient = new XAWS.DynamoDB.DocumentClient()
   ) { }
   
+  // gets all todos
   async getAllTodos(userId) {
     const result = await this.documentClient.query({
       TableName: this.todosTable,
@@ -26,6 +27,7 @@ export default class TodosAccess {
   }
 
 
+  // updates a todo
   async updateTodo(todoId, userId, updatedTodo) {
     await this.documentClient.update({
       TableName: this.todosTable,
@@ -47,6 +49,8 @@ export default class TodosAccess {
     }).promise();
   }
 
+
+  // deletes a todo
   async deleteTodo(todoId, userId) {
     await this.documentClient.delete({
       TableName: this.todosTable,
@@ -57,6 +61,8 @@ export default class TodosAccess {
     }).promise();
   }
 
+
+  // get a todo
   async getTodo(todoId, userId) {
     const result = await this.documentClient.get({
       TableName: this.todosTable,
@@ -69,6 +75,8 @@ export default class TodosAccess {
     return result.Item;
   }
 
+
+  // creates a new todo
   async addTodo(todoItem) {
     await this.documentClient.put({
       TableName: this.todosTable,
